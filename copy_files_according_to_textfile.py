@@ -10,7 +10,7 @@ def main(files_textfile, input_dir, output_dir):
         input_path = os.path.join(input_dir, cur_file)
         output_path = os.path.join(output_dir, cur_file)
         try:
-            bash_command = 'cp "' + input_path +'" "' + output_path + '"'
+            bash_command = 'scp -r "' + input_path +'" "' + output_path + '"'
             os.system(bash_command)
         except Exception as e:
             print(e)
