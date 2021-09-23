@@ -90,8 +90,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=''' Gets slide level accuracies ''')
 
     parser.add_argument('--csv_dir', type=str, help='the directory that contains the csv files. This is also the dir where the output images will be saved.')
-    parser.add_argument('--subtypes_list', nargs='+', type=str, help='Space separated strings. Ensure the order is the same as in the training file. Example: "benign malignant"')
-    parser.add_argument('--patch_pattern', type=str, default='subtype/slide/magnification', help="'/' separated words describing the directory structure of the patch paths between the root dir and the patch itself.")
+    parser.add_argument('--subtypes_list', nargs='+', type=str, default=['CC', 'MC', 'EC', 'LGSC', 'HGSC'], help='Space separated strings. Ensure the order is the same as in the training file. Example: "benign malignant"')
+    parser.add_argument('--patch_pattern', type=str, default='subtype/slide/patch_size/magnification', help="/ separated words describing the directory structure of the patch paths between the root dir and the patch itself.")
     parser.add_argument('--threshold', type=float, help='The threshold for whether to include a patch-level prediction. The default is 1/len(subtype_list)')
     parser.add_argument('--verbose', action='store_true', default=False)
 
