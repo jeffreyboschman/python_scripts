@@ -6,6 +6,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 def create_stacked_barplots(csv_dir, subtypes_list, patch_pattern, threshold, verbose):
+    pd.set_option('max_colwidth', 400)
+    pd.set_option("expand_frame_repr", True)
     print(f'All patch probabilities must be greater than {threshold} in order to be considered.\n')
     for file_idx, csv_file in enumerate(sorted(glob.glob(os.path.join(csv_dir, '*.csv')))):
         print(f'\n{csv_file}\n')
@@ -15,15 +17,15 @@ def create_stacked_barplots(csv_dir, subtypes_list, patch_pattern, threshold, ve
         for idx, row in df.iterrows():
             slide_id = get_slide_id_from_full_file_name(row['path'], patch_pattern)
             probability_list = get_list_from_probability_string(row['probability'])
-            target_label = int(row['target_label'])
-            predicted_label = int(row['predicted_label'])
+            target_label = row['target_label']
+            predicted_label = row['predicted_label']
             if max(probability_list) > threshold: 
                 if slide_id in slide_pred_votes_dict:
-                    slide_pred_votes_dict[slide_id][predicted_label]+=1
+                    slide_pred_votes_dict[slide_id][int(predicted_label)]+=1
                 else:
-                    slide_real_labels_dict[slide_id] = target_label
+                    slide_real_labels_dict[slide_id] = int(target_label)
                     slide_pred_votes_dict[slide_id] = [0]*len(subtypes_list) 
-                    slide_pred_votes_dict[slide_id][predicted_label]+=1
+                    slide_pred_votes_dict[slide_id][int(predicted_label)]+=1
 
         pred_df = pd.DataFrame.from_dict(slide_pred_votes_dict, orient='index')
         for idx, subtype in enumerate(subtypes_list):
@@ -33,7 +35,7 @@ def create_stacked_barplots(csv_dir, subtypes_list, patch_pattern, threshold, ve
             pred_df[subtype+'_%'] = pred_df[subtype]/pred_df['total_patches']
         if verbose:
             print("First 5 rows of dataframe that has the counts and percentages of predicted patches for each slide")
-            print(pred_df.head())
+            #print(pred_df.head())
 
         target_df = pd.DataFrame.from_dict(slide_real_labels_dict, orient='index')
         target_df.rename(columns={0:'target_label'}, inplace=True)
@@ -41,18 +43,18 @@ def create_stacked_barplots(csv_dir, subtypes_list, patch_pattern, threshold, ve
             target_df["target_label"].replace({idx:subtype}, inplace=True)
         if verbose:
             print("First 5 rows of dataframe that has the true label for each slide")
-            target_df.head()
+            #target_df.head()
 
         slide_df = pd.merge(pred_df, target_df, how='outer', left_index=True, right_index=True)
+        print(slide_df.head())
         subtypes_df = pd.DataFrame(subtypes_list, columns=['real_subtype'])
         for subtype in subtypes_list:
             subtype_perc_means = slide_df.groupby('target_label')[subtype + '_%'].mean()
-            print(subtype_perc_means.values)
-            subtypes_df[subtype+'_%_mean'] = subtype_perc_means.values
+            subtypes_df[subtype+'_%_mean'] = subtype_perc_means.reindex(subtypes_list).values
         subtypes_df.set_index('real_subtype', inplace=True)
         if verbose:
             print("The mean % of patches predicted as a subtype per slide by true subtype")
-            subtypes_df
+            print(subtypes_df.head())
 
         ax = subtypes_df.plot.bar(stacked=True)
         fig = ax.get_figure()
