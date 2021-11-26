@@ -56,7 +56,11 @@ def create_stacked_barplots(csv_dir, subtypes_list, patch_pattern, threshold, ve
             print("The mean % of patches predicted as a subtype per slide by true subtype")
             print(subtypes_df.head())
 
-        ax = subtypes_df.plot.bar(stacked=True)
+        ax = subtypes_df.plot.bar(stacked=True, rot=0)
+        box = ax.get_position()
+        ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        ax.set_title("Mean % of patches per slide predicted as a subtype")
         fig = ax.get_figure()
         save_name = "stacked_barplot_" + os.path.basename(csv_file)[:-4] + ".png"
         print(save_name)
